@@ -40,7 +40,8 @@ export async function renderMarkdown(
 
   const rawHtml = md.render(content);
   const withAlerts = renderGitHubAlerts(rawHtml);
-  const contentHtml = wrapSectionsCollapsible(withAlerts);
+  const withTables = wrapTables(withAlerts);
+  const contentHtml = wrapSectionsCollapsible(withTables);
   const title = frontmatter?.title || extractTitle(content);
 
   // Build the page preamble
@@ -153,6 +154,10 @@ function stripFrontmatter(mdText: string): { content: string; frontmatter: Recor
   }
 
   return { content, frontmatter };
+}
+
+function wrapTables(html: string): string {
+  return html.replace(/<table>/g, '<div class="table-wrapper"><table>').replace(/<\/table>/g, '</table></div>');
 }
 
 function wrapSectionsCollapsible(html: string): string {

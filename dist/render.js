@@ -24,7 +24,8 @@ export async function renderMarkdown(mdText, opts) {
     md.use(taskLists, { enabled: true, label: true });
     const rawHtml = md.render(content);
     const withAlerts = renderGitHubAlerts(rawHtml);
-    const contentHtml = wrapSectionsCollapsible(withAlerts);
+    const withTables = wrapTables(withAlerts);
+    const contentHtml = wrapSectionsCollapsible(withTables);
     const title = frontmatter?.title || extractTitle(content);
     // Build the page preamble
     const parts = [];
@@ -124,6 +125,9 @@ function stripFrontmatter(mdText) {
         frontmatter[currentKey] = listItems.join(", ");
     }
     return { content, frontmatter };
+}
+function wrapTables(html) {
+    return html.replace(/<table>/g, '<div class="table-wrapper"><table>').replace(/<\/table>/g, '</table></div>');
 }
 function wrapSectionsCollapsible(html) {
     // Split HTML at h2 boundaries and wrap each section in <details>

@@ -634,10 +634,57 @@ export function buildHtml(opts: TemplateOptions): string {
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border);
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .markdown-body table thead {
+      background: ${isDark ? "rgba(99,110,123,0.1)" : "rgba(175,184,193,0.12)"};
     }
 
     .markdown-body table th {
       background: ${isDark ? "#161b22" : "#f6f8fa"};
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .markdown-body table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid ${isDark ? "rgba(99,110,123,0.2)" : "rgba(175,184,193,0.2)"};
+      color: var(--text-secondary);
+    }
+
+    .markdown-body table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .markdown-body table tbody tr {
+      transition: background 0.1s;
+    }
+
+    .markdown-body table tbody tr:hover {
+      background: ${isDark ? "rgba(99,110,123,0.08)" : "rgba(175,184,193,0.08)"};
+    }
+
+    .markdown-body table code {
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: ${isDark ? "rgba(110,118,129,0.2)" : "rgba(175,184,193,0.2)"};
+    }
+
+    /* Responsive table wrapper */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 16px 0;
+      border-radius: 8px;
     }
 
     /* Horizontal rule */
