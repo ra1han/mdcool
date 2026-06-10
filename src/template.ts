@@ -34,6 +34,31 @@ export function buildHtml(opts: TemplateOptions): string {
     .code-block-wrapper {
       position: relative;
     }
+    .collapsible-section {
+      border-bottom: 1px solid ${opts.theme === "light" ? "#d1d9e0" : "#30363d"};
+      padding: 4px 0;
+    }
+    .collapsible-section summary {
+      font-size: 1.5em;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 12px 0;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .collapsible-section summary::before {
+      content: "▶";
+      font-size: 0.6em;
+      transition: transform 0.15s;
+    }
+    .collapsible-section[open] summary::before {
+      transform: rotate(90deg);
+    }
+    .collapsible-section summary::-webkit-details-marker {
+      display: none;
+    }
     .code-copy-btn {
       position: absolute;
       top: 8px;

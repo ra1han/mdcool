@@ -53,5 +53,7 @@ describe("renderMarkdown", () => {
     const result = await renderMarkdown(md, { theme: "dark" });
 
     expect(result.contentHtml).toContain('id="section-one"');
+    expect(result.contentHtml).toContain("<details");
+    expect(result.contentHtml).toContain("<summary>Section One</summary>");
   });
 });
