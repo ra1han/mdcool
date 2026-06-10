@@ -1,0 +1,42 @@
+{
+  "name": "readmd",
+  "version": "0.1.0",
+  "description": "Render Markdown files to beautiful HTML from the CLI",
+  "type": "module",
+  "bin": {
+    "readmd": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "markdown",
+    "html",
+    "cli",
+    "renderer"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^25.9.2",
+    "@types/ws": "^8.18.1",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.6"
+  },
+  "dependencies": {
+    "chokidar": "^5.0.0",
+    "commander": "^15.0.0",
+    "markdown-it": "^14.2.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "open": "^11.0.0",
+    "shiki": "^4.2.0",
+    "ws": "^8.21.0"
+  }
+}
