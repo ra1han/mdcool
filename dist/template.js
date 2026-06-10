@@ -694,13 +694,51 @@ export function buildHtml(opts) {
     }
 
     /* Mermaid diagrams */
-    .mermaid {
+    .mermaid-container {
+      position: relative;
       background: var(--surface);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      padding: 24px;
       margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .mermaid-container .mermaid {
+      padding: 24px;
       text-align: center;
+      overflow: auto;
+      transition: transform 0.15s ease;
+      transform-origin: center center;
+    }
+
+    .mermaid-zoom-controls {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      z-index: 5;
+    }
+
+    .mermaid-zoom-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .mermaid-zoom-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     /* Print styles */
@@ -767,10 +805,22 @@ export function buildHtml(opts) {
 
         mermaidBlocks.forEach((code) => {
           const pre = code.parentElement;
-          const container = document.createElement("div");
-          container.className = "mermaid";
-          container.textContent = code.textContent;
-          pre.replaceWith(container);
+          const wrapper = document.createElement("div");
+          wrapper.className = "mermaid-container";
+
+          const controls = document.createElement("div");
+          controls.className = "mermaid-zoom-controls";
+          controls.innerHTML = '<button class="mermaid-zoom-btn" data-action="in" title="Zoom in">+</button>' +
+            '<button class="mermaid-zoom-btn" data-action="out" title="Zoom out">\u2212</button>' +
+            '<button class="mermaid-zoom-btn" data-action="reset" title="Reset zoom">⟳</button>';
+
+          const diagram = document.createElement("div");
+          diagram.className = "mermaid";
+          diagram.textContent = code.textContent;
+
+          wrapper.appendChild(controls);
+          wrapper.appendChild(diagram);
+          pre.replaceWith(wrapper);
         });
 
         await mermaid.run();
@@ -786,6 +836,21 @@ export function buildHtml(opts) {
             const unrendered = section.querySelectorAll(".mermaid:not([data-processed])");
             if (unrendered.length) mermaid.run({ nodes: [...unrendered] });
           }
+        });
+      });
+
+      // Mermaid zoom controls
+      document.querySelectorAll(".mermaid-zoom-controls").forEach(controls => {
+        const diagram = controls.parentElement.querySelector(".mermaid");
+        let scale = 1;
+        controls.addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-action]");
+          if (!btn) return;
+          const action = btn.dataset.action;
+          if (action === "in") scale = Math.min(scale + 0.25, 3);
+          else if (action === "out") scale = Math.max(scale - 0.25, 0.25);
+          else scale = 1;
+          diagram.style.transform = "scale(" + scale + ")";
         });
       });
 
