@@ -850,26 +850,54 @@ export function buildHtml(opts: TemplateOptions): string {
         });
       });
 
-      // Mermaid zoom controls
+      // Mermaid zoom controls + drag-to-pan
       document.querySelectorAll(".mermaid-zoom-controls").forEach(controls => {
         const container = controls.parentElement;
         const diagram = container.querySelector(".mermaid");
-        let scale = 1;
+        let scale = 1, panX = 0, panY = 0;
+        let isDragging = false, startX = 0, startY = 0;
+
+        function applyTransform() {
+          diagram.style.transform = "scale(" + scale + ") translate(" + panX + "px, " + panY + "px)";
+        }
+
         controls.addEventListener("click", (e) => {
           const btn = e.target.closest("[data-action]");
           if (!btn) return;
           const action = btn.dataset.action;
           if (action === "in") scale = Math.min(scale + 0.25, 3);
           else if (action === "out") scale = Math.max(scale - 0.25, 0.25);
-          else scale = 1;
-          diagram.style.transform = "scale(" + scale + ")";
-          // Adjust container height to match scaled content
+          else { scale = 1; panX = 0; panY = 0; }
+          applyTransform();
+          diagram.style.cursor = scale > 1 ? "grab" : "default";
           if (scale <= 1) {
             const natural = diagram.scrollHeight;
             container.style.height = (natural * scale) + "px";
           } else {
             container.style.height = "auto";
           }
+        });
+
+        diagram.addEventListener("mousedown", (e) => {
+          if (scale <= 1) return;
+          isDragging = true;
+          startX = e.clientX - panX;
+          startY = e.clientY - panY;
+          diagram.style.cursor = "grabbing";
+          e.preventDefault();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+          if (!isDragging) return;
+          panX = e.clientX - startX;
+          panY = e.clientY - startY;
+          applyTransform();
+        });
+
+        document.addEventListener("mouseup", () => {
+          if (!isDragging) return;
+          isDragging = false;
+          diagram.style.cursor = "grab";
         });
       });
 
