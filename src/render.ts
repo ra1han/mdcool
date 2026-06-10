@@ -69,18 +69,20 @@ function escapeHtml(str: string): string {
 }
 
 const META_LABELS: Record<string, string> = {
+  title: "📄 Title",
   author: "👤 Author",
   "ms.date": "📅 Date",
   date: "📅 Date",
   description: "📝 Description",
   "ms.topic": "📂 Topic",
   topic: "📂 Topic",
+  keywords: "🏷️ Keywords",
+  sidebar_position: "📌 Position",
 };
 
 function renderFrontmatterMeta(fm: Record<string, string>): string {
   const items: string[] = [];
   for (const [key, value] of Object.entries(fm)) {
-    if (key === "title" || key === "keywords" || key === "sidebar_position") continue;
     const label = META_LABELS[key] || key;
     items.push(`<span class="meta-item"><strong>${escapeHtml(label)}</strong> ${escapeHtml(value)}</span>`);
   }
@@ -118,10 +120,36 @@ function stripFrontmatter(mdText: string): { content: string; frontmatter: Recor
   const content = mdText.slice(match[0].length);
   const frontmatter: Record<string, string> = {};
 
-  // Simple YAML key: value parsing (top-level scalars only)
-  for (const line of match[1].split(/\r?\n/)) {
-    const kv = line.match(/^(\w[\w.]*)\s*:\s*(.+)$/);
-    if (kv) frontmatter[kv[1]] = kv[2].trim();
+  // Parse YAML: handles scalars and simple lists
+  const lines = match[1].split(/\r?\n/);
+  let currentKey: string | null = null;
+  let listItems: string[] = [];
+
+  for (const line of lines) {
+    const kv = line.match(/^(\w[\w.]*)\s*:\s*(.*)$/);
+    if (kv) {
+      // Flush previous list
+      if (currentKey && listItems.length > 0) {
+        frontmatter[currentKey] = listItems.join(", ");
+        listItems = [];
+      }
+      currentKey = kv[1];
+      const value = kv[2].trim();
+      if (value) {
+        frontmatter[currentKey] = value;
+        currentKey = null;
+      }
+    } else {
+      // List item under current key
+      const listItem = line.match(/^\s+-\s+(.+)$/);
+      if (listItem && currentKey) {
+        listItems.push(listItem[1].trim());
+      }
+    }
+  }
+  // Flush final list
+  if (currentKey && listItems.length > 0) {
+    frontmatter[currentKey] = listItems.join(", ");
   }
 
   return { content, frontmatter };
