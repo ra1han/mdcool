@@ -2,9 +2,21 @@ import { createHighlighter as shikiCreateHighlighter, type Highlighter } from "s
 
 type HighlightFn = (code: string, lang: string) => string;
 
+const cache = new Map<string, Promise<HighlightFn>>();
+
 export async function createHighlighter(theme: "light" | "dark"): Promise<HighlightFn> {
   const themeName = theme === "light" ? "github-light" : "github-dark";
 
+  if (cache.has(themeName)) {
+    return cache.get(themeName)!;
+  }
+
+  const promise = initHighlighter(themeName);
+  cache.set(themeName, promise);
+  return promise;
+}
+
+async function initHighlighter(themeName: string): Promise<HighlightFn> {
   const highlighter: Highlighter = await shikiCreateHighlighter({
     themes: [themeName],
     langs: [
@@ -18,7 +30,6 @@ export async function createHighlighter(theme: "light" | "dark"): Promise<Highli
     try {
       return highlighter.codeToHtml(code, { lang, theme: themeName });
     } catch {
-      // Unknown language — fall back to plain escaped text
       const escaped = code
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")

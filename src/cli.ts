@@ -46,7 +46,9 @@ program
 
     const outPath = opts.out
       ? path.resolve(opts.out)
-      : filePath.replace(/\.md$/i, ".html");
+      : /\.md$/i.test(filePath)
+        ? filePath.replace(/\.md$/i, ".html")
+        : filePath + ".html";
 
     await fs.writeFile(outPath, html, "utf8");
     console.log(`Written: ${outPath}`);
