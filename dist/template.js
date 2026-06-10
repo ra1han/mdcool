@@ -156,6 +156,11 @@ export function buildHtml(opts) {
       max-width: 1340px;
       margin: 0 auto;
       gap: 0;
+      transition: grid-template-columns 0.2s;
+    }
+
+    .page-layout.toc-hidden {
+      grid-template-columns: 0px 1fr;
     }
 
     /* TOC Sidebar */
@@ -170,9 +175,11 @@ export function buildHtml(opts) {
     }
 
     .toc-sidebar.collapsed {
-      margin-left: -260px;
+      overflow: hidden;
       opacity: 0;
       pointer-events: none;
+      padding: 0;
+      border-right: none;
     }
 
     .toc-header {
@@ -833,7 +840,9 @@ export function buildHtml(opts) {
     function toggleToc() {
       const sidebar = document.getElementById("tocSidebar");
       const showBtn = document.getElementById("tocShowBtn");
+      const layout = document.querySelector(".page-layout");
       sidebar.classList.toggle("collapsed");
+      layout.classList.toggle("toc-hidden");
       showBtn.classList.toggle("visible", sidebar.classList.contains("collapsed"));
     }
 
