@@ -39,15 +39,51 @@ export async function renderMarkdown(
   md.use(taskLists, { enabled: true, label: true });
 
   const rawHtml = md.render(content);
-  const contentHtml = wrapSectionsCollapsible(rawHtml);
+  const withAlerts = renderGitHubAlerts(rawHtml);
+  const contentHtml = wrapSectionsCollapsible(withAlerts);
   const title = frontmatter?.title || extractTitle(content);
 
-  return { contentHtml, title };
+  // If no h1 in content but we have a frontmatter title, prepend it
+  const hasH1 = /<h1[\s>]/i.test(rawHtml);
+  const finalHtml = (!hasH1 && frontmatter?.title)
+    ? `<h1>${escapeHtml(frontmatter.title)}</h1>\n${contentHtml}`
+    : contentHtml;
+
+  return { contentHtml: finalHtml, title };
 }
 
 function extractTitle(mdText: string): string {
   const match = mdText.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : "Untitled";
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+const ALERT_ICONS: Record<string, { icon: string; cssClass: string }> = {
+  NOTE: { icon: "ℹ️", cssClass: "alert-note" },
+  TIP: { icon: "💡", cssClass: "alert-tip" },
+  IMPORTANT: { icon: "❗", cssClass: "alert-important" },
+  WARNING: { icon: "⚠️", cssClass: "alert-warning" },
+  CAUTION: { icon: "🔴", cssClass: "alert-caution" },
+};
+
+function renderGitHubAlerts(html: string): string {
+  // Convert GitHub-style alerts: <blockquote><p>[!NOTE]\nContent</p></blockquote>
+  return html.replace(
+    /<blockquote>\s*<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*\n?([\s\S]*?)<\/p>\s*<\/blockquote>/gi,
+    (_match, type: string, content: string) => {
+      const key = type.toUpperCase();
+      const alert = ALERT_ICONS[key] || ALERT_ICONS.NOTE;
+      return `<div class="github-alert ${alert.cssClass}">` +
+        `<span class="github-alert-title">${alert.icon} ${key.charAt(0) + key.slice(1).toLowerCase()}</span>` +
+        `<p>${content.trim()}</p></div>`;
+    }
+  );
 }
 
 function stripFrontmatter(mdText: string): { content: string; frontmatter: Record<string, string> | null } {

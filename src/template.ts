@@ -354,6 +354,56 @@ export function buildHtml(opts: TemplateOptions): string {
       margin: 16px 0;
     }
 
+    /* GitHub-style alerts */
+    .github-alert {
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      border-left: 4px solid;
+    }
+
+    .github-alert-title {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9em;
+      margin-bottom: 6px;
+    }
+
+    .github-alert p {
+      margin: 0;
+      font-size: 0.95em;
+    }
+
+    .alert-note {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+    }
+    .alert-note .github-alert-title { color: var(--accent); }
+
+    .alert-tip {
+      background: var(--success-subtle);
+      border-color: var(--success);
+    }
+    .alert-tip .github-alert-title { color: var(--success); }
+
+    .alert-important {
+      background: var(--purple-subtle);
+      border-color: var(--purple);
+    }
+    .alert-important .github-alert-title { color: var(--purple); }
+
+    .alert-warning {
+      background: var(--warning-subtle);
+      border-color: var(--warning);
+    }
+    .alert-warning .github-alert-title { color: var(--warning); }
+
+    .alert-caution {
+      background: var(--danger-subtle);
+      border-color: var(--danger);
+    }
+    .alert-caution .github-alert-title { color: var(--danger); }
+
     /* Unordered lists */
     .markdown-body ul:not(.contains-task-list) {
       list-style: none;
