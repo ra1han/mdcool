@@ -20,7 +20,7 @@ export async function renderMarkdown(mdText, opts) {
             return highlight(code, lang);
         },
     });
-    md.use(anchor, { permalink: false, slugify: slugify });
+    md.use(anchor, { permalink: false });
     md.use(taskLists, { enabled: true, label: true });
     const rawHtml = md.render(content);
     const withAlerts = renderGitHubAlerts(rawHtml);
@@ -127,7 +127,7 @@ function stripFrontmatter(mdText) {
     return { content, frontmatter };
 }
 function wrapTables(html) {
-    return html.replace(/<table>/g, '<div class="table-wrapper"><table>').replace(/<\/table>/g, '</table></div>');
+    return html.replace(/<table(\s[^>]*)?>/g, '<div class="table-wrapper"><table$1>').replace(/<\/table>/g, '</table></div>');
 }
 function wrapSectionsCollapsible(html) {
     // Split HTML at h2 boundaries and wrap each section in <details>
@@ -160,13 +160,5 @@ function wrapSectionsCollapsible(html) {
             `</details>\n`);
     }
     return parts.join("");
-}
-function slugify(str) {
-    return str
-        .toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/[\s_]+/g, "-")
-        .replace(/^-+|-+$/g, "");
 }
 //# sourceMappingURL=render.js.map

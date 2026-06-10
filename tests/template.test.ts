@@ -15,24 +15,26 @@ describe("buildHtml", () => {
     expect(html).toContain("<h1>Hello</h1>");
   });
 
-  it("uses dark github-markdown CSS for dark theme", () => {
+  it("uses dark theme styling for dark theme", () => {
     const html = buildHtml({
       title: "Test",
       contentHtml: "<p>hi</p>",
       theme: "dark",
     });
 
-    expect(html).toContain("github-markdown-dark");
+    expect(html).toContain('data-theme="dark"');
+    expect(html).toContain("#0d1117");
   });
 
-  it("uses light github-markdown CSS for light theme", () => {
+  it("uses light theme styling for light theme", () => {
     const html = buildHtml({
       title: "Test",
       contentHtml: "<p>hi</p>",
       theme: "light",
     });
 
-    expect(html).toContain("github-markdown-light");
+    expect(html).toContain('data-theme="light"');
+    expect(html).toContain("#ffffff");
   });
 
   it("includes mermaid script", () => {

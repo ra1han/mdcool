@@ -53,7 +53,7 @@ describe("CLI", () => {
       encoding: "utf8",
     });
 
-    expect(output).toContain("github-markdown-light");
+    expect(output).toContain('data-theme="light"');
   });
 
   it("exits with error for missing file", () => {

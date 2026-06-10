@@ -54,8 +54,11 @@ program
     console.log(`Written: ${outPath}`);
 
     if (opts.open) {
-      const { default: open } = await import("open");
-      await open(outPath);
+      const { exec } = await import("node:child_process");
+      const cmd = process.platform === "win32" ? `start "" "${outPath}"`
+        : process.platform === "darwin" ? `open "${outPath}"`
+        : `xdg-open "${outPath}"`;
+      exec(cmd);
     }
   });
 

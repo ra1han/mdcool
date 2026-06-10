@@ -35,7 +35,7 @@ export async function renderMarkdown(
     },
   });
 
-  md.use(anchor, { permalink: false, slugify: slugify });
+  md.use(anchor, { permalink: false });
   md.use(taskLists, { enabled: true, label: true });
 
   const rawHtml = md.render(content);
@@ -157,7 +157,7 @@ function stripFrontmatter(mdText: string): { content: string; frontmatter: Recor
 }
 
 function wrapTables(html: string): string {
-  return html.replace(/<table>/g, '<div class="table-wrapper"><table>').replace(/<\/table>/g, '</table></div>');
+  return html.replace(/<table(\s[^>]*)?>/g, '<div class="table-wrapper"><table$1>').replace(/<\/table>/g, '</table></div>');
 }
 
 function wrapSectionsCollapsible(html: string): string {
@@ -199,14 +199,4 @@ function wrapSectionsCollapsible(html: string): string {
   }
 
   return parts.join("");
-}
-
-
-function slugify(str: string): string {
-  return str
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }

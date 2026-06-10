@@ -4,12 +4,9 @@ export type TemplateOptions = {
   theme: "light" | "dark";
 };
 
-const GITHUB_CSS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.6.1";
 const MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
 
 export function buildHtml(opts: TemplateOptions): string {
-  const cssFile = opts.theme === "light" ? "github-markdown-light.css" : "github-markdown-dark.css";
-  const cssHref = `${GITHUB_CSS_CDN}/${cssFile}`;
   const isDark = opts.theme === "dark";
 
   const colors = isDark ? {
@@ -72,7 +69,6 @@ export function buildHtml(opts: TemplateOptions): string {
   <meta charset="utf-8">
   <title>${escapeHtml(opts.title)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="${cssHref}">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
