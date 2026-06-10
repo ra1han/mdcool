@@ -46,14 +46,8 @@ export async function renderMarkdown(
   // Build the page preamble
   const parts: string[] = [];
 
-  // If no h1 in content but we have a frontmatter title, prepend it
-  const hasH1 = /<h1[\s>]/i.test(rawHtml);
-  if (!hasH1 && frontmatter?.title) {
-    parts.push(`<h1>${escapeHtml(frontmatter.title)}</h1>`);
-  }
-
-  // Render frontmatter metadata as a info bar
-  if (frontmatter && Object.keys(frontmatter).length > 1) {
+  // Render frontmatter metadata as a info bar (don't inject title as h1)
+  if (frontmatter && Object.keys(frontmatter).length > 0) {
     const meta = renderFrontmatterMeta(frontmatter);
     if (meta) parts.push(meta);
   }

@@ -181,10 +181,10 @@ export function buildHtml(opts: TemplateOptions): string {
     /* Frontmatter metadata bar */
     .frontmatter-meta {
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px 20px;
+      flex-direction: column;
+      gap: 6px;
       padding: 12px 16px;
-      margin: 8px 0 24px;
+      margin: 0 0 24px;
       background: var(--surface);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
