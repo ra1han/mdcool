@@ -701,6 +701,7 @@ export function buildHtml(opts) {
       border-radius: 8px;
       margin: 16px 0;
       overflow: hidden;
+      min-height: 80px;
     }
 
     .mermaid-container .mermaid {
@@ -708,13 +709,14 @@ export function buildHtml(opts) {
       text-align: center;
       overflow: auto;
       transition: transform 0.15s ease;
-      transform-origin: center center;
+      transform-origin: top center;
     }
 
     .mermaid-zoom-controls {
-      position: absolute;
+      position: sticky;
       top: 8px;
-      right: 8px;
+      float: right;
+      margin: 8px 8px 0 0;
       display: flex;
       gap: 4px;
       z-index: 5;
@@ -841,7 +843,8 @@ export function buildHtml(opts) {
 
       // Mermaid zoom controls
       document.querySelectorAll(".mermaid-zoom-controls").forEach(controls => {
-        const diagram = controls.parentElement.querySelector(".mermaid");
+        const container = controls.parentElement;
+        const diagram = container.querySelector(".mermaid");
         let scale = 1;
         controls.addEventListener("click", (e) => {
           const btn = e.target.closest("[data-action]");
@@ -851,6 +854,13 @@ export function buildHtml(opts) {
           else if (action === "out") scale = Math.max(scale - 0.25, 0.25);
           else scale = 1;
           diagram.style.transform = "scale(" + scale + ")";
+          // Adjust container height to match scaled content
+          if (scale <= 1) {
+            const natural = diagram.scrollHeight;
+            container.style.height = (natural * scale) + "px";
+          } else {
+            container.style.height = "auto";
+          }
         });
       });
 
