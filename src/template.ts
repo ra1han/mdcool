@@ -545,16 +545,37 @@ export function buildHtml(opts: TemplateOptions): string {
   <script>
     mermaid.initialize({ startOnLoad: false, theme: "${isDark ? "dark" : "default"}" });
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // Mermaid diagrams
-      document.querySelectorAll("pre code.language-mermaid").forEach((code) => {
-        const pre = code.parentElement;
-        const container = document.createElement("div");
-        container.className = "mermaid";
-        container.textContent = code.textContent;
-        pre.replaceWith(container);
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Mermaid diagrams — must expand sections first so diagrams have dimensions
+      const mermaidBlocks = document.querySelectorAll("pre code.language-mermaid");
+      if (mermaidBlocks.length > 0) {
+        // Temporarily open all collapsed sections
+        const closedSections = [...document.querySelectorAll(".collapsible-section:not([open])")];
+        closedSections.forEach(s => s.open = true);
+
+        mermaidBlocks.forEach((code) => {
+          const pre = code.parentElement;
+          const container = document.createElement("div");
+          container.className = "mermaid";
+          container.textContent = code.textContent;
+          pre.replaceWith(container);
+        });
+
+        await mermaid.run();
+
+        // Re-collapse sections after render
+        closedSections.forEach(s => s.open = false);
+      }
+
+      // Also re-render mermaid when a section is opened (handles edge cases)
+      document.querySelectorAll(".collapsible-section").forEach(section => {
+        section.addEventListener("toggle", () => {
+          if (section.open) {
+            const unrendered = section.querySelectorAll(".mermaid:not([data-processed])");
+            if (unrendered.length) mermaid.run({ nodes: [...unrendered] });
+          }
+        });
       });
-      mermaid.run();
 
       // Code blocks: language label + copy button
       document.querySelectorAll("pre > code, pre code[class*='language-']").forEach((code) => {
