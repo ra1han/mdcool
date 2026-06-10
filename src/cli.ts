@@ -7,7 +7,7 @@ import { renderMarkdown } from "./render.js";
 import { buildHtml } from "./template.js";
 
 program
-  .name("readmd")
+  .name("coolmd")
   .description("Render Markdown files to beautiful HTML")
   .version("0.1.0")
   .argument("<file>", "Markdown file to render")

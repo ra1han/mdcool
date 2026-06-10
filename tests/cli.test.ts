@@ -9,7 +9,7 @@ describe("CLI", () => {
   let mdFile: string;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "readmd-test-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "coolmd-test-"));
     mdFile = path.join(tmpDir, "test.md");
     fs.writeFileSync(mdFile, "# Hello\n\nWorld\n\n```js\nconst x = 1;\n```\n");
   });

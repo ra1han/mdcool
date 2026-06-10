@@ -1,4 +1,4 @@
-# readmd
+# coolmd
 
 Render Markdown files to beautiful HTML from the command line. Designed for reading AI-agent-generated plans and research documents.
 
@@ -15,22 +15,22 @@ Render Markdown files to beautiful HTML from the command line. Designed for read
 
 ```bash
 # Generate HTML file
-npx readmd plan.md
+npx coolmd plan.md
 
 # Open in browser immediately
-npx readmd plan.md --open
+npx coolmd plan.md --open
 
 # Live reload while editing
-npx readmd plan.md --serve
+npx coolmd plan.md --serve
 
 # Light theme
-npx readmd plan.md --theme light
+npx coolmd plan.md --theme light
 
 # Custom output path
-npx readmd plan.md --out output/plan.html
+npx coolmd plan.md --out output/plan.html
 
 # Pipe to stdout
-npx readmd plan.md --stdout
+npx coolmd plan.md --stdout
 ```
 
 ## Options

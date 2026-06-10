@@ -26,17 +26,17 @@ export async function startServer(filePath, opts) {
                     client.send("reload");
                 }
             }
-            console.log(`[readmd] Reloaded: ${path.basename(filePath)}`);
+            console.log(`[coolmd] Reloaded: ${path.basename(filePath)}`);
         }
         catch (err) {
-            console.error(`[readmd] Render error:`, err);
+            console.error(`[coolmd] Render error:`, err);
         }
     });
     server.listen(opts.port, () => {
         const url = `http://localhost:${opts.port}`;
-        console.log(`[readmd] Serving: ${path.basename(filePath)}`);
-        console.log(`[readmd] URL: ${url}`);
-        console.log(`[readmd] Watching for changes... (Ctrl+C to stop)`);
+        console.log(`[coolmd] Serving: ${path.basename(filePath)}`);
+        console.log(`[coolmd] URL: ${url}`);
+        console.log(`[coolmd] Watching for changes... (Ctrl+C to stop)`);
     });
     // Keep process alive
     process.on("SIGINT", () => {
