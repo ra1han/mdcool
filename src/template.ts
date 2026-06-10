@@ -178,6 +178,26 @@ export function buildHtml(opts: TemplateOptions): string {
       margin-bottom: 8px;
     }
 
+    /* Frontmatter metadata bar */
+    .frontmatter-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      padding: 12px 16px;
+      margin: 8px 0 24px;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+
+    .frontmatter-meta .meta-item strong {
+      color: var(--text);
+      font-weight: 500;
+      margin-right: 4px;
+    }
+
     .markdown-body {
       min-width: 200px;
       max-width: 100%;

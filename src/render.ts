@@ -43,13 +43,23 @@ export async function renderMarkdown(
   const contentHtml = wrapSectionsCollapsible(withAlerts);
   const title = frontmatter?.title || extractTitle(content);
 
+  // Build the page preamble
+  const parts: string[] = [];
+
   // If no h1 in content but we have a frontmatter title, prepend it
   const hasH1 = /<h1[\s>]/i.test(rawHtml);
-  const finalHtml = (!hasH1 && frontmatter?.title)
-    ? `<h1>${escapeHtml(frontmatter.title)}</h1>\n${contentHtml}`
-    : contentHtml;
+  if (!hasH1 && frontmatter?.title) {
+    parts.push(`<h1>${escapeHtml(frontmatter.title)}</h1>`);
+  }
 
-  return { contentHtml: finalHtml, title };
+  // Render frontmatter metadata as a info bar
+  if (frontmatter && Object.keys(frontmatter).length > 1) {
+    const meta = renderFrontmatterMeta(frontmatter);
+    if (meta) parts.push(meta);
+  }
+
+  parts.push(contentHtml);
+  return { contentHtml: parts.join("\n"), title };
 }
 
 function extractTitle(mdText: string): string {
@@ -62,6 +72,26 @@ function escapeHtml(str: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+const META_LABELS: Record<string, string> = {
+  author: "👤 Author",
+  "ms.date": "📅 Date",
+  date: "📅 Date",
+  description: "📝 Description",
+  "ms.topic": "📂 Topic",
+  topic: "📂 Topic",
+};
+
+function renderFrontmatterMeta(fm: Record<string, string>): string {
+  const items: string[] = [];
+  for (const [key, value] of Object.entries(fm)) {
+    if (key === "title" || key === "keywords" || key === "sidebar_position") continue;
+    const label = META_LABELS[key] || key;
+    items.push(`<span class="meta-item"><strong>${escapeHtml(label)}</strong> ${escapeHtml(value)}</span>`);
+  }
+  if (items.length === 0) return "";
+  return `<div class="frontmatter-meta">${items.join("")}</div>`;
 }
 
 const ALERT_ICONS: Record<string, { icon: string; cssClass: string }> = {
