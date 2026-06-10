@@ -1,10 +1,10 @@
 {
-  "name": "coolmd",
+  "name": "mdcool",
   "version": "0.1.0",
   "description": "Render Markdown files to beautiful HTML from the CLI",
   "type": "module",
   "bin": {
-    "coolmd": "./dist/cli.js"
+    "mdcool": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

@@ -39,17 +39,17 @@ export async function startServer(
           client.send("reload");
         }
       }
-      console.log(`[coolmd] Reloaded: ${path.basename(filePath)}`);
+      console.log(`[mdcool] Reloaded: ${path.basename(filePath)}`);
     } catch (err) {
-      console.error(`[coolmd] Render error:`, err);
+      console.error(`[mdcool] Render error:`, err);
     }
   });
 
   server.listen(opts.port, () => {
     const url = `http://localhost:${opts.port}`;
-    console.log(`[coolmd] Serving: ${path.basename(filePath)}`);
-    console.log(`[coolmd] URL: ${url}`);
-    console.log(`[coolmd] Watching for changes... (Ctrl+C to stop)`);
+    console.log(`[mdcool] Serving: ${path.basename(filePath)}`);
+    console.log(`[mdcool] URL: ${url}`);
+    console.log(`[mdcool] Watching for changes... (Ctrl+C to stop)`);
   });
 
   // Keep process alive
