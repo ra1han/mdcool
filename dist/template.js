@@ -1,0 +1,887 @@
+const GITHUB_CSS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.6.1";
+const MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+export function buildHtml(opts) {
+    const cssFile = opts.theme === "light" ? "github-markdown-light.css" : "github-markdown-dark.css";
+    const cssHref = `${GITHUB_CSS_CDN}/${cssFile}`;
+    const isDark = opts.theme === "dark";
+    const colors = isDark ? {
+        bg: "#0d1117",
+        surface: "#161b22",
+        surfaceHover: "#1c2128",
+        border: "#30363d",
+        borderSubtle: "#21262d",
+        text: "#e6edf3",
+        textMuted: "#8b949e",
+        accent: "#58a6ff",
+        accentSubtle: "rgba(56,139,253,0.15)",
+        success: "#3fb950",
+        successSubtle: "rgba(46,160,67,0.15)",
+        warning: "#d29922",
+        warningSubtle: "rgba(187,128,9,0.15)",
+        danger: "#f85149",
+        dangerSubtle: "rgba(248,81,73,0.15)",
+        purple: "#bc8cff",
+        purpleSubtle: "rgba(163,113,247,0.15)",
+        copyBtnBg: "rgba(110,118,129,0.4)",
+        copyBtnBorder: "rgba(240,246,252,0.1)",
+        copyBtnText: "#c9d1d9",
+        shadow: "0 1px 3px rgba(0,0,0,0.3)",
+        codeLangBg: "#21262d",
+        codeLangText: "#8b949e",
+        scrollThumb: "#484f58",
+        scrollTrack: "transparent",
+    } : {
+        bg: "#f6f8fa",
+        surface: "#ffffff",
+        surfaceHover: "#f3f4f6",
+        border: "#d1d9e0",
+        borderSubtle: "#e5e7eb",
+        text: "#1f2328",
+        textMuted: "#656d76",
+        accent: "#0969da",
+        accentSubtle: "rgba(9,105,218,0.1)",
+        success: "#1a7f37",
+        successSubtle: "rgba(26,127,55,0.1)",
+        warning: "#9a6700",
+        warningSubtle: "rgba(154,103,0,0.1)",
+        danger: "#d1242f",
+        dangerSubtle: "rgba(209,36,47,0.1)",
+        purple: "#8250df",
+        purpleSubtle: "rgba(130,80,223,0.1)",
+        copyBtnBg: "rgba(175,184,193,0.2)",
+        copyBtnBorder: "rgba(31,35,40,0.15)",
+        copyBtnText: "#1f2328",
+        shadow: "0 1px 3px rgba(31,35,40,0.12)",
+        codeLangBg: "#eff2f5",
+        codeLangText: "#656d76",
+        scrollThumb: "#afb8c1",
+        scrollTrack: "transparent",
+    };
+    return `<!doctype html>
+<html lang="en" data-theme="${opts.theme}">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(opts.title)}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="${cssHref}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg: ${colors.bg};
+      --surface: ${colors.surface};
+      --surface-hover: ${colors.surfaceHover};
+      --border: ${colors.border};
+      --border-subtle: ${colors.borderSubtle};
+      --text: ${colors.text};
+      --text-muted: ${colors.textMuted};
+      --accent: ${colors.accent};
+      --accent-subtle: ${colors.accentSubtle};
+      --success: ${colors.success};
+      --success-subtle: ${colors.successSubtle};
+      --warning: ${colors.warning};
+      --warning-subtle: ${colors.warningSubtle};
+      --danger: ${colors.danger};
+      --danger-subtle: ${colors.dangerSubtle};
+      --purple: ${colors.purple};
+      --purple-subtle: ${colors.purpleSubtle};
+      --shadow: ${colors.shadow};
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: ${isDark ? "rgba(13,17,23,0.85)" : "rgba(255,255,255,0.85)"};
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-header-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--accent-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .page-header-icon svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--accent);
+    }
+
+    .page-header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-header-meta {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Main content area */
+    .page-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      max-width: 1340px;
+      margin: 0 auto;
+      gap: 0;
+    }
+
+    /* TOC Sidebar */
+    .toc-sidebar {
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      padding: 24px 16px;
+      border-right: 1px solid var(--border-subtle);
+      transition: margin-left 0.2s, opacity 0.2s;
+    }
+
+    .toc-sidebar.collapsed {
+      margin-left: -260px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .toc-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .toc-collapse-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .toc-collapse-btn:hover {
+      color: var(--accent);
+      background: var(--accent-subtle);
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc-list li {
+      margin: 0;
+    }
+
+    .toc-list a {
+      display: block;
+      padding: 5px 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 4px;
+      border-left: 2px solid transparent;
+      transition: color 0.1s, background 0.1s, border-color 0.1s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-list a:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    .toc-list a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: var(--accent-subtle);
+      font-weight: 500;
+    }
+
+    .toc-list .toc-h3 {
+      padding-left: 22px;
+      font-size: 12px;
+    }
+
+    /* Toggle button when sidebar hidden */
+    .toc-show-btn {
+      position: fixed;
+      left: 12px;
+      top: 68px;
+      z-index: 90;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      box-shadow: var(--shadow);
+      display: none;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .toc-show-btn:hover {
+      color: var(--accent);
+    }
+
+    .toc-show-btn.visible {
+      display: flex;
+    }
+
+    .page-container {
+      padding: 40px 32px 80px;
+      min-width: 0;
+    }
+
+    @media (max-width: 900px) {
+      .page-layout { grid-template-columns: 1fr; }
+      .toc-sidebar { display: none; }
+      .toc-show-btn { display: none !important; }
+      .page-container { padding: 24px 16px 60px; }
+      .page-header { padding: 10px 16px; }
+    }
+
+    /* Document title */
+    .markdown-body h1:first-child {
+      font-size: 2.2em;
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 8px;
+    }
+
+    /* Frontmatter metadata bar */
+    .frontmatter-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px 16px;
+      margin: 0 0 24px;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+
+    .frontmatter-meta .meta-item strong {
+      color: var(--text);
+      font-weight: 500;
+      margin-right: 4px;
+    }
+
+    .markdown-body {
+      min-width: 200px;
+      max-width: 100%;
+      font-size: 16px;
+    }
+
+    /* Collapsible sections */
+    .collapsible-section {
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin: 16px 0;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .collapsible-section:hover {
+      border-color: var(--border);
+    }
+
+    .collapsible-section summary {
+      font-size: 1.25em;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 16px 20px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .collapsible-section summary:hover {
+      background: var(--surface-hover);
+    }
+
+    .collapsible-section summary::before {
+      content: "";
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      background: var(--accent-subtle);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${encodeURIComponent(colors.accent)}' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      transition: transform 0.2s ease, background-color 0.15s;
+    }
+
+    .collapsible-section[open] summary::before {
+      transform: rotate(90deg);
+      background-color: var(--accent-subtle);
+    }
+
+    .collapsible-section summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .collapsible-section > *:not(summary) {
+      padding: 0 20px;
+    }
+
+    .collapsible-section[open] summary {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* Code blocks */
+    .code-block-wrapper {
+      position: relative;
+      margin: 16px 0;
+    }
+
+    .code-block-wrapper pre {
+      border-radius: 8px !important;
+      border: 1px solid var(--border-subtle) !important;
+      padding: 16px !important;
+      overflow-x: auto;
+    }
+
+    .code-lang-label {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      background: ${colors.codeLangBg};
+      color: ${colors.codeLangText};
+      border-bottom-left-radius: 6px;
+      border-top-right-radius: 7px;
+    }
+
+    .code-copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid ${colors.copyBtnBorder};
+      background: ${colors.copyBtnBg};
+      color: ${colors.copyBtnText};
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.1s;
+      backdrop-filter: blur(4px);
+    }
+
+    .code-block-wrapper:hover .code-copy-btn {
+      opacity: 1;
+    }
+
+    .code-copy-btn:hover {
+      background: ${isDark ? "rgba(110,118,129,0.6)" : "rgba(175,184,193,0.4)"};
+    }
+
+    .code-copy-btn.copied {
+      background: var(--success-subtle);
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    /* Task lists */
+    .markdown-body .task-list-item {
+      list-style: none;
+      position: relative;
+    }
+
+    .markdown-body .task-list-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 8px;
+      position: relative;
+      top: -1px;
+      cursor: default;
+    }
+
+    .markdown-body .task-list-item input[type="checkbox"]:checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .markdown-body .task-list-item input[type="checkbox"]:checked::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    /* Blockquotes */
+    .markdown-body blockquote {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-subtle);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+    }
+
+    /* GitHub-style alerts */
+    .github-alert {
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 16px 0;
+      border-left: 4px solid;
+    }
+
+    .github-alert-title {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9em;
+      margin-bottom: 6px;
+    }
+
+    .github-alert p {
+      margin: 0;
+      font-size: 0.95em;
+    }
+
+    .alert-note {
+      background: var(--accent-subtle);
+      border-color: var(--accent);
+    }
+    .alert-note .github-alert-title { color: var(--accent); }
+
+    .alert-tip {
+      background: var(--success-subtle);
+      border-color: var(--success);
+    }
+    .alert-tip .github-alert-title { color: var(--success); }
+
+    .alert-important {
+      background: var(--purple-subtle);
+      border-color: var(--purple);
+    }
+    .alert-important .github-alert-title { color: var(--purple); }
+
+    .alert-warning {
+      background: var(--warning-subtle);
+      border-color: var(--warning);
+    }
+    .alert-warning .github-alert-title { color: var(--warning); }
+
+    .alert-caution {
+      background: var(--danger-subtle);
+      border-color: var(--danger);
+    }
+    .alert-caution .github-alert-title { color: var(--danger); }
+
+    /* Unordered lists */
+    .markdown-body ul:not(.contains-task-list) {
+      list-style: none;
+      padding-left: 1.5em;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li {
+      position: relative;
+      padding-left: 4px;
+      margin-bottom: 6px;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li::before {
+      content: "";
+      position: absolute;
+      left: -1.2em;
+      top: 0.6em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.8;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li > ul > li::before {
+      background: var(--purple);
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      transform: rotate(45deg);
+      opacity: 0.7;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li > ul > li > ul > li::before {
+      background: var(--text-muted);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    /* Ordered lists */
+    .markdown-body ol {
+      list-style: none;
+      padding-left: 1.5em;
+      counter-reset: list-counter;
+    }
+
+    .markdown-body ol > li {
+      position: relative;
+      padding-left: 4px;
+      margin-bottom: 6px;
+      counter-increment: list-counter;
+    }
+
+    .markdown-body ol > li::before {
+      content: counter(list-counter);
+      position: absolute;
+      left: -1.6em;
+      top: 0.15em;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      font-size: 0.75em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* Tables */
+    .markdown-body table {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .markdown-body table th {
+      background: ${isDark ? "#161b22" : "#f6f8fa"};
+    }
+
+    /* Horizontal rule */
+    .markdown-body hr {
+      border: none;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+      margin: 32px 0;
+    }
+
+    /* Links */
+    .markdown-body a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .markdown-body a:hover {
+      border-bottom-color: var(--accent);
+    }
+
+    /* Inline code */
+    .markdown-body code:not(pre code) {
+      background: ${isDark ? "rgba(110,118,129,0.25)" : "rgba(175,184,193,0.2)"};
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.9em;
+    }
+
+    /* Images */
+    .markdown-body img {
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      max-width: 100%;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: ${colors.scrollThumb}; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: ${colors.scrollTrack}; }
+
+    /* Expand all / collapse all button */
+    .toggle-all-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .toggle-all-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-subtle);
+    }
+
+    /* Mermaid diagrams */
+    .mermaid {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 16px 0;
+      text-align: center;
+    }
+
+    /* Print styles */
+    @media print {
+      .page-header { display: none; }
+      .toc-sidebar { display: none; }
+      .page-layout { grid-template-columns: 1fr; }
+      .collapsible-section { border: none; box-shadow: none; }
+      .collapsible-section[open] summary { border-bottom: 1px solid #ddd; }
+      details { open: true; }
+      .code-copy-btn { display: none; }
+      .toggle-all-btn { display: none; }
+      .toc-show-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="page-header-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 1.75C2 .784 2.784 0 3.75 0h8.5C13.216 0 14 .784 14 1.75v12.5A1.75 1.75 0 0 1 12.25 16h-8.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25ZM4.5 3.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 0 1.5h-5.5a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5Zm0 3a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5Z"/></svg>
+    </div>
+    <span class="page-header-title">${escapeHtml(opts.title)}</span>
+    <span class="page-header-meta">
+      <button class="toggle-all-btn" onclick="toggleAllSections()" id="toggleAllBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <span>Expand all</span>
+      </button>
+    </span>
+  </header>
+
+  <button class="toc-show-btn" id="tocShowBtn" onclick="toggleToc()" title="Show table of contents">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+  </button>
+
+  <div class="page-layout">
+    <nav class="toc-sidebar" id="tocSidebar">
+      <div class="toc-header">
+        <span class="toc-title">On this page</span>
+        <button class="toc-collapse-btn" onclick="toggleToc()" title="Hide table of contents">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+      <ul class="toc-list" id="tocList"></ul>
+    </nav>
+
+    <main class="page-container">
+      <article class="markdown-body">
+        ${opts.contentHtml}
+      </article>
+    </main>
+  </div>
+
+  <script src="${MERMAID_CDN}"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: "${isDark ? "dark" : "default"}" });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Mermaid diagrams — must expand sections first so diagrams have dimensions
+      const mermaidBlocks = document.querySelectorAll("pre code.language-mermaid");
+      if (mermaidBlocks.length > 0) {
+        // Temporarily open all collapsed sections
+        const closedSections = [...document.querySelectorAll(".collapsible-section:not([open])")];
+        closedSections.forEach(s => s.open = true);
+
+        mermaidBlocks.forEach((code) => {
+          const pre = code.parentElement;
+          const container = document.createElement("div");
+          container.className = "mermaid";
+          container.textContent = code.textContent;
+          pre.replaceWith(container);
+        });
+
+        await mermaid.run();
+
+        // Re-collapse sections after render
+        closedSections.forEach(s => s.open = false);
+      }
+
+      // Also re-render mermaid when a section is opened (handles edge cases)
+      document.querySelectorAll(".collapsible-section").forEach(section => {
+        section.addEventListener("toggle", () => {
+          if (section.open) {
+            const unrendered = section.querySelectorAll(".mermaid:not([data-processed])");
+            if (unrendered.length) mermaid.run({ nodes: [...unrendered] });
+          }
+        });
+      });
+
+      // Code blocks: language label + copy button
+      document.querySelectorAll("pre > code, pre code[class*='language-']").forEach((code) => {
+        const pre = code.closest("pre");
+        if (!pre || pre.closest(".mermaid")) return;
+        if (pre.parentElement?.classList.contains("code-block-wrapper")) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper";
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+
+        // Language label
+        const langClass = code.className.match(/language-(\\w+)/);
+        if (langClass && langClass[1]) {
+          const label = document.createElement("span");
+          label.className = "code-lang-label";
+          label.textContent = langClass[1];
+          wrapper.appendChild(label);
+        }
+
+        // Copy button
+        const btn = document.createElement("button");
+        btn.className = "code-copy-btn";
+        btn.textContent = "Copy";
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(code.textContent);
+            btn.textContent = "✓ Copied";
+            btn.classList.add("copied");
+            setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1500);
+          } catch {}
+        });
+        wrapper.appendChild(btn);
+      });
+    });
+
+    // Toggle all sections
+    function toggleAllSections() {
+      const sections = document.querySelectorAll(".collapsible-section");
+      const btn = document.getElementById("toggleAllBtn");
+      const allOpen = [...sections].every(s => s.open);
+
+      sections.forEach(s => s.open = !allOpen);
+      btn.querySelector("span").textContent = allOpen ? "Expand all" : "Collapse all";
+      btn.querySelector("svg").style.transform = allOpen ? "" : "rotate(180deg)";
+    }
+
+    // TOC
+    function toggleToc() {
+      const sidebar = document.getElementById("tocSidebar");
+      const showBtn = document.getElementById("tocShowBtn");
+      sidebar.classList.toggle("collapsed");
+      showBtn.classList.toggle("visible", sidebar.classList.contains("collapsed"));
+    }
+
+    (function buildToc() {
+      const tocList = document.getElementById("tocList");
+      const sections = document.querySelectorAll(".collapsible-section[id]");
+      const summaries = document.querySelectorAll(".collapsible-section summary");
+
+      sections.forEach((section, i) => {
+        const id = section.id;
+        const text = summaries[i]?.textContent?.trim() || id;
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = "#" + id;
+        a.textContent = text;
+        a.dataset.id = id;
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          section.open = true;
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+
+      // Active state tracking via IntersectionObserver
+      const tocLinks = tocList.querySelectorAll("a");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach(l => l.classList.remove("active"));
+            const link = tocList.querySelector('a[data-id="' + entry.target.id + '"]');
+            if (link) link.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-60px 0px -80% 0px" });
+
+      sections.forEach(s => observer.observe(s));
+    })();
+  </script>
+</body>
+</html>`;
+}
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+//# sourceMappingURL=template.js.map

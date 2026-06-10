@@ -159,13 +159,138 @@ export function buildHtml(opts: TemplateOptions): string {
     }
 
     /* Main content area */
-    .page-container {
-      max-width: 1080px;
+    .page-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      max-width: 1340px;
       margin: 0 auto;
-      padding: 40px 32px 80px;
+      gap: 0;
     }
 
-    @media (max-width: 768px) {
+    /* TOC Sidebar */
+    .toc-sidebar {
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      padding: 24px 16px;
+      border-right: 1px solid var(--border-subtle);
+      transition: margin-left 0.2s, opacity 0.2s;
+    }
+
+    .toc-sidebar.collapsed {
+      margin-left: -260px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .toc-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .toc-collapse-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .toc-collapse-btn:hover {
+      color: var(--accent);
+      background: var(--accent-subtle);
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc-list li {
+      margin: 0;
+    }
+
+    .toc-list a {
+      display: block;
+      padding: 5px 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 4px;
+      border-left: 2px solid transparent;
+      transition: color 0.1s, background 0.1s, border-color 0.1s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-list a:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    .toc-list a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: var(--accent-subtle);
+      font-weight: 500;
+    }
+
+    .toc-list .toc-h3 {
+      padding-left: 22px;
+      font-size: 12px;
+    }
+
+    /* Toggle button when sidebar hidden */
+    .toc-show-btn {
+      position: fixed;
+      left: 12px;
+      top: 68px;
+      z-index: 90;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      box-shadow: var(--shadow);
+      display: none;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .toc-show-btn:hover {
+      color: var(--accent);
+    }
+
+    .toc-show-btn.visible {
+      display: flex;
+    }
+
+    .page-container {
+      padding: 40px 32px 80px;
+      min-width: 0;
+    }
+
+    @media (max-width: 900px) {
+      .page-layout { grid-template-columns: 1fr; }
+      .toc-sidebar { display: none; }
+      .toc-show-btn { display: none !important; }
       .page-container { padding: 24px 16px 60px; }
       .page-header { padding: 10px 16px; }
     }
@@ -583,11 +708,14 @@ export function buildHtml(opts: TemplateOptions): string {
     /* Print styles */
     @media print {
       .page-header { display: none; }
+      .toc-sidebar { display: none; }
+      .page-layout { grid-template-columns: 1fr; }
       .collapsible-section { border: none; box-shadow: none; }
       .collapsible-section[open] summary { border-bottom: 1px solid #ddd; }
       details { open: true; }
       .code-copy-btn { display: none; }
       .toggle-all-btn { display: none; }
+      .toc-show-btn { display: none; }
     }
   </style>
 </head>
@@ -605,11 +733,27 @@ export function buildHtml(opts: TemplateOptions): string {
     </span>
   </header>
 
-  <main class="page-container">
-    <article class="markdown-body">
-      ${opts.contentHtml}
-    </article>
-  </main>
+  <button class="toc-show-btn" id="tocShowBtn" onclick="toggleToc()" title="Show table of contents">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+  </button>
+
+  <div class="page-layout">
+    <nav class="toc-sidebar" id="tocSidebar">
+      <div class="toc-header">
+        <span class="toc-title">On this page</span>
+        <button class="toc-collapse-btn" onclick="toggleToc()" title="Hide table of contents">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+      <ul class="toc-list" id="tocList"></ul>
+    </nav>
+
+    <main class="page-container">
+      <article class="markdown-body">
+        ${opts.contentHtml}
+      </article>
+    </main>
+  </div>
 
   <script src="${MERMAID_CDN}"></script>
   <script>
@@ -693,6 +837,51 @@ export function buildHtml(opts: TemplateOptions): string {
       btn.querySelector("span").textContent = allOpen ? "Expand all" : "Collapse all";
       btn.querySelector("svg").style.transform = allOpen ? "" : "rotate(180deg)";
     }
+
+    // TOC
+    function toggleToc() {
+      const sidebar = document.getElementById("tocSidebar");
+      const showBtn = document.getElementById("tocShowBtn");
+      sidebar.classList.toggle("collapsed");
+      showBtn.classList.toggle("visible", sidebar.classList.contains("collapsed"));
+    }
+
+    (function buildToc() {
+      const tocList = document.getElementById("tocList");
+      const sections = document.querySelectorAll(".collapsible-section[id]");
+      const summaries = document.querySelectorAll(".collapsible-section summary");
+
+      sections.forEach((section, i) => {
+        const id = section.id;
+        const text = summaries[i]?.textContent?.trim() || id;
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = "#" + id;
+        a.textContent = text;
+        a.dataset.id = id;
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          section.open = true;
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+
+      // Active state tracking via IntersectionObserver
+      const tocLinks = tocList.querySelectorAll("a");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach(l => l.classList.remove("active"));
+            const link = tocList.querySelector('a[data-id="' + entry.target.id + '"]');
+            if (link) link.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-60px 0px -80% 0px" });
+
+      sections.forEach(s => observer.observe(s));
+    })();
   </script>
 </body>
 </html>`;
