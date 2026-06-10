@@ -354,6 +354,79 @@ export function buildHtml(opts: TemplateOptions): string {
       margin: 16px 0;
     }
 
+    /* Unordered lists */
+    .markdown-body ul:not(.contains-task-list) {
+      list-style: none;
+      padding-left: 1.5em;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li {
+      position: relative;
+      padding-left: 4px;
+      margin-bottom: 6px;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li::before {
+      content: "";
+      position: absolute;
+      left: -1.2em;
+      top: 0.6em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.8;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li > ul > li::before {
+      background: var(--purple);
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      transform: rotate(45deg);
+      opacity: 0.7;
+    }
+
+    .markdown-body ul:not(.contains-task-list) > li > ul > li > ul > li::before {
+      background: var(--text-muted);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    /* Ordered lists */
+    .markdown-body ol {
+      list-style: none;
+      padding-left: 1.5em;
+      counter-reset: list-counter;
+    }
+
+    .markdown-body ol > li {
+      position: relative;
+      padding-left: 4px;
+      margin-bottom: 6px;
+      counter-increment: list-counter;
+    }
+
+    .markdown-body ol > li::before {
+      content: counter(list-counter);
+      position: absolute;
+      left: -1.6em;
+      top: 0.15em;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      font-size: 0.75em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
     /* Tables */
     .markdown-body table {
       border-radius: 8px;
