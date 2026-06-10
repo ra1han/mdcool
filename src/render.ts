@@ -16,6 +16,7 @@ export async function renderMarkdown(
   mdText: string,
   opts: RenderOptions
 ): Promise<RenderResult> {
+  const { content, frontmatter } = stripFrontmatter(mdText);
   const highlight = await createHighlighter(opts.theme);
 
   const md = new MarkdownIt({
@@ -37,9 +38,9 @@ export async function renderMarkdown(
   md.use(anchor, { permalink: false, slugify: slugify });
   md.use(taskLists, { enabled: true, label: true });
 
-  const rawHtml = md.render(mdText);
+  const rawHtml = md.render(content);
   const contentHtml = wrapSectionsCollapsible(rawHtml);
-  const title = extractTitle(mdText);
+  const title = frontmatter?.title || extractTitle(content);
 
   return { contentHtml, title };
 }
@@ -47,6 +48,23 @@ export async function renderMarkdown(
 function extractTitle(mdText: string): string {
   const match = mdText.match(/^#\s+(.+)$/m);
   return match ? match[1].trim() : "Untitled";
+}
+
+function stripFrontmatter(mdText: string): { content: string; frontmatter: Record<string, string> | null } {
+  const fmRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+  const match = mdText.match(fmRegex);
+  if (!match) return { content: mdText, frontmatter: null };
+
+  const content = mdText.slice(match[0].length);
+  const frontmatter: Record<string, string> = {};
+
+  // Simple YAML key: value parsing (top-level scalars only)
+  for (const line of match[1].split(/\r?\n/)) {
+    const kv = line.match(/^(\w[\w.]*)\s*:\s*(.+)$/);
+    if (kv) frontmatter[kv[1]] = kv[2].trim();
+  }
+
+  return { content, frontmatter };
 }
 
 function wrapSectionsCollapsible(html: string): string {
