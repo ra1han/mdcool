@@ -1,15 +1,33 @@
 # mdcool
 
-Render Markdown files to beautiful HTML from the command line. Designed for reading AI-agent-generated plans and research documents.
+[![Publish to npm](https://github.com/ra1han/mdcool/actions/workflows/publish.yml/badge.svg)](https://github.com/ra1han/mdcool/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/mdcool.svg)](https://www.npmjs.com/package/mdcool)
+[![npm downloads](https://img.shields.io/npm/dm/mdcool.svg)](https://www.npmjs.com/package/mdcool)
+[![Node.js](https://img.shields.io/node/v/mdcool.svg)](https://www.npmjs.com/package/mdcool)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Render Markdown files to polished, standalone HTML from the command line. Built for reading AI-agent-generated plans, research notes, specs, and technical documents without extra setup.
+
+## Demo
+
+![mdcool demo](img/mdcool.gif)
+
+## Quick Start
+
+```bash
+npx mdcool README.md --open
+```
+
+`mdcool` writes an HTML file next to your Markdown input by default. Add `--serve` for live reload while editing, or `--stdout` when you want to pipe the rendered HTML elsewhere.
 
 ## Features
 
-- GitHub-like styling with light and dark themes
+- GitHub-like document styling
 - VS Code-grade syntax highlighting (Shiki)
 - Mermaid diagram support
 - Copy buttons on code blocks
 - Live reload serve mode
-- Zero-config — just point at a `.md` file
+- Zero-config usage: point it at a `.md` file and render
 
 ## Usage
 
@@ -33,6 +51,22 @@ npx mdcool plan.md --out output/plan.html
 npx mdcool plan.md --stdout
 ```
 
+## CLI Options
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--open` | Open in default browser | off |
+| `--serve` | Watch mode with live reload | off |
+| `--out` | Custom output path | `<input>.html` |
+| `--port` | Port for serve mode | `4567` |
+| `--stdout` | Output to stdout | off |
+
+Generated pages currently use the light theme.
+
+## Requirements
+
+- Node.js >= 18
+
 ## Development Commands
 
 ```bash
@@ -52,22 +86,10 @@ npm run test:watch
 npm run dev
 ```
 
-## Options
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--open` | Open in default browser | off |
-| `--serve` | Watch mode with live reload | off |
-| `--out` | Custom output path | `<input>.html` |
-| `--port` | Port for serve mode | `4567` |
-| `--stdout` | Output to stdout | off |
-
-Generated pages currently use the light theme.
-
 ## Sample Document
 
 The included sample Markdown document was taken from the [microsoft/hve-core](https://github.com/microsoft/hve-core) repository.
 
-## Requirements
+## License
 
-- Node.js >= 18
+MIT. See [LICENSE](LICENSE) for details.
