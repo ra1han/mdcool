@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/logo.png" alt="mdcool" width="320">
+  <img src="https://raw.githubusercontent.com/ra1han/mdcool/refs/heads/main/img/logo.png" alt="mdcool" width="320">
 </p>
 
 [![Publish to npm](https://github.com/ra1han/mdcool/actions/workflows/publish.yml/badge.svg)](https://github.com/ra1han/mdcool/actions/workflows/publish.yml)
@@ -12,7 +12,7 @@ Render Markdown files to polished, standalone HTML from the command line. Built 
 
 ## Demo
 
-![mdcool demo](img/mdcool.gif)
+![mdcool demo](https://raw.githubusercontent.com/ra1han/mdcool/refs/heads/main/img/mdcool.gif)
 
 ## Quick Start
 
