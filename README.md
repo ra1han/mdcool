@@ -1,4 +1,6 @@
-# mdcool
+<p align="center">
+  <img src="img/logo.png" alt="mdcool" width="320">
+</p>
 
 [![Publish to npm](https://github.com/ra1han/mdcool/actions/workflows/publish.yml/badge.svg)](https://github.com/ra1han/mdcool/actions/workflows/publish.yml)
 [![npm version](https://img.shields.io/npm/v/mdcool.svg)](https://www.npmjs.com/package/mdcool)
