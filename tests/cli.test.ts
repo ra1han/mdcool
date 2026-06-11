@@ -48,12 +48,27 @@ describe("CLI", () => {
     expect(fs.existsSync(outFile)).toBe(true);
   });
 
-  it("uses light theme with --theme light", () => {
-    const output = execSync(`node dist/cli.js "${mdFile}" --stdout --theme light`, {
+  it("defaults generated HTML to light theme", () => {
+    const output = execSync(`node dist/cli.js "${mdFile}" --stdout`, {
       encoding: "utf8",
     });
 
     expect(output).toContain('data-theme="light"');
+  });
+
+  it("does not expose a CLI theme option", () => {
+    const help = execSync("node dist/cli.js --help", { encoding: "utf8" });
+
+    expect(help).not.toContain("--theme");
+  });
+
+  it("rejects the removed CLI theme option", () => {
+    expect(() => {
+      execSync(`node dist/cli.js "${mdFile}" --stdout --theme dark`, {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
+    }).toThrow();
   });
 
   it("exits with error for missing file", () => {

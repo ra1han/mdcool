@@ -6,36 +6,43 @@ export type TemplateOptions = {
 
 const MERMAID_CDN = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
 
-export function buildHtml(opts: TemplateOptions): string {
-  const isDark = opts.theme === "dark";
+type ThemeColors = {
+  bg: string;
+  surface: string;
+  surfaceHover: string;
+  border: string;
+  borderSubtle: string;
+  text: string;
+  textMuted: string;
+  accent: string;
+  accentSubtle: string;
+  success: string;
+  successSubtle: string;
+  warning: string;
+  warningSubtle: string;
+  danger: string;
+  dangerSubtle: string;
+  purple: string;
+  purpleSubtle: string;
+  copyBtnBg: string;
+  copyBtnBorder: string;
+  copyBtnText: string;
+  copyBtnHoverBg: string;
+  shadow: string;
+  codeLangBg: string;
+  codeLangText: string;
+  scrollThumb: string;
+  scrollTrack: string;
+  headerBg: string;
+  tableHeadBg: string;
+  tableHeaderBg: string;
+  tableRowBorder: string;
+  tableRowHover: string;
+  inlineCodeBg: string;
+};
 
-  const colors = isDark ? {
-    bg: "#0d1117",
-    surface: "#161b22",
-    surfaceHover: "#1c2128",
-    border: "#30363d",
-    borderSubtle: "#21262d",
-    text: "#e6edf3",
-    textMuted: "#8b949e",
-    accent: "#58a6ff",
-    accentSubtle: "rgba(56,139,253,0.15)",
-    success: "#3fb950",
-    successSubtle: "rgba(46,160,67,0.15)",
-    warning: "#d29922",
-    warningSubtle: "rgba(187,128,9,0.15)",
-    danger: "#f85149",
-    dangerSubtle: "rgba(248,81,73,0.15)",
-    purple: "#bc8cff",
-    purpleSubtle: "rgba(163,113,247,0.15)",
-    copyBtnBg: "rgba(110,118,129,0.4)",
-    copyBtnBorder: "rgba(240,246,252,0.1)",
-    copyBtnText: "#c9d1d9",
-    shadow: "0 1px 3px rgba(0,0,0,0.3)",
-    codeLangBg: "#21262d",
-    codeLangText: "#8b949e",
-    scrollThumb: "#484f58",
-    scrollTrack: "transparent",
-  } : {
+const THEME_COLORS: Record<"light" | "dark", ThemeColors> = {
+  light: {
     bg: "#f6f8fa",
     surface: "#ffffff",
     surfaceHover: "#f3f4f6",
@@ -56,23 +63,58 @@ export function buildHtml(opts: TemplateOptions): string {
     copyBtnBg: "rgba(175,184,193,0.2)",
     copyBtnBorder: "rgba(31,35,40,0.15)",
     copyBtnText: "#1f2328",
+    copyBtnHoverBg: "rgba(175,184,193,0.4)",
     shadow: "0 1px 3px rgba(31,35,40,0.12)",
     codeLangBg: "#eff2f5",
     codeLangText: "#656d76",
     scrollThumb: "#afb8c1",
     scrollTrack: "transparent",
-  };
+    headerBg: "rgba(255,255,255,0.85)",
+    tableHeadBg: "rgba(175,184,193,0.12)",
+    tableHeaderBg: "#f6f8fa",
+    tableRowBorder: "rgba(175,184,193,0.2)",
+    tableRowHover: "rgba(175,184,193,0.08)",
+    inlineCodeBg: "rgba(175,184,193,0.2)",
+  },
+  dark: {
+    bg: "#0d1117",
+    surface: "#161b22",
+    surfaceHover: "#1c2128",
+    border: "#30363d",
+    borderSubtle: "#21262d",
+    text: "#e6edf3",
+    textMuted: "#8b949e",
+    accent: "#58a6ff",
+    accentSubtle: "rgba(56,139,253,0.15)",
+    success: "#3fb950",
+    successSubtle: "rgba(46,160,67,0.15)",
+    warning: "#d29922",
+    warningSubtle: "rgba(187,128,9,0.15)",
+    danger: "#f85149",
+    dangerSubtle: "rgba(248,81,73,0.15)",
+    purple: "#bc8cff",
+    purpleSubtle: "rgba(163,113,247,0.15)",
+    copyBtnBg: "rgba(110,118,129,0.4)",
+    copyBtnBorder: "rgba(240,246,252,0.1)",
+    copyBtnText: "#c9d1d9",
+    copyBtnHoverBg: "rgba(110,118,129,0.6)",
+    shadow: "0 1px 3px rgba(0,0,0,0.3)",
+    codeLangBg: "#21262d",
+    codeLangText: "#8b949e",
+    scrollThumb: "#484f58",
+    scrollTrack: "transparent",
+    headerBg: "rgba(13,17,23,0.85)",
+    tableHeadBg: "rgba(99,110,123,0.1)",
+    tableHeaderBg: "#161b22",
+    tableRowBorder: "rgba(99,110,123,0.2)",
+    tableRowHover: "rgba(99,110,123,0.08)",
+    inlineCodeBg: "rgba(110,118,129,0.25)",
+  },
+};
 
-  return `<!doctype html>
-<html lang="en" data-theme="${opts.theme}">
-<head>
-  <meta charset="utf-8">
-  <title>${escapeHtml(opts.title)}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-
-    :root {
+function themeVariables(theme: "light" | "dark", colors: ThemeColors): string {
+  return `[data-theme="${theme}"] {
+      color-scheme: ${theme};
       --bg: ${colors.bg};
       --surface: ${colors.surface};
       --surface-hover: ${colors.surfaceHover};
@@ -91,7 +133,39 @@ export function buildHtml(opts: TemplateOptions): string {
       --purple: ${colors.purple};
       --purple-subtle: ${colors.purpleSubtle};
       --shadow: ${colors.shadow};
-    }
+      --header-bg: ${colors.headerBg};
+      --code-lang-bg: ${colors.codeLangBg};
+      --code-lang-text: ${colors.codeLangText};
+      --copy-btn-bg: ${colors.copyBtnBg};
+      --copy-btn-border: ${colors.copyBtnBorder};
+      --copy-btn-text: ${colors.copyBtnText};
+      --copy-btn-hover-bg: ${colors.copyBtnHoverBg};
+      --table-head-bg: ${colors.tableHeadBg};
+      --table-header-bg: ${colors.tableHeaderBg};
+      --table-row-border: ${colors.tableRowBorder};
+      --table-row-hover: ${colors.tableRowHover};
+      --inline-code-bg: ${colors.inlineCodeBg};
+      --scroll-thumb: ${colors.scrollThumb};
+      --scroll-track: ${colors.scrollTrack};
+    }`;
+}
+
+export function buildHtml(opts: TemplateOptions): string {
+  const isDark = opts.theme === "dark";
+  const colors = THEME_COLORS[opts.theme];
+
+  return `<!doctype html>
+<html lang="en" data-theme="${opts.theme}">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(opts.title)}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    ${themeVariables("light", THEME_COLORS.light)}
+
+    ${themeVariables("dark", THEME_COLORS.dark)}
 
     html {
       scroll-behavior: smooth;
@@ -111,7 +185,7 @@ export function buildHtml(opts: TemplateOptions): string {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: ${isDark ? "rgba(13,17,23,0.85)" : "rgba(255,255,255,0.85)"};
+      background: var(--header-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
@@ -419,8 +493,8 @@ export function buildHtml(opts: TemplateOptions): string {
       text-transform: uppercase;
       letter-spacing: 0.5px;
       padding: 3px 10px;
-      background: ${colors.codeLangBg};
-      color: ${colors.codeLangText};
+      background: var(--code-lang-bg);
+      color: var(--code-lang-text);
       border-bottom-left-radius: 6px;
       border-top-right-radius: 7px;
     }
@@ -433,9 +507,9 @@ export function buildHtml(opts: TemplateOptions): string {
       font-weight: 500;
       padding: 4px 10px;
       border-radius: 6px;
-      border: 1px solid ${colors.copyBtnBorder};
-      background: ${colors.copyBtnBg};
-      color: ${colors.copyBtnText};
+      border: 1px solid var(--copy-btn-border);
+      background: var(--copy-btn-bg);
+      color: var(--copy-btn-text);
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.15s, background 0.1s;
@@ -447,7 +521,7 @@ export function buildHtml(opts: TemplateOptions): string {
     }
 
     .code-copy-btn:hover {
-      background: ${isDark ? "rgba(110,118,129,0.6)" : "rgba(175,184,193,0.4)"};
+      background: var(--copy-btn-hover-bg);
     }
 
     .code-copy-btn.copied {
@@ -638,11 +712,11 @@ export function buildHtml(opts: TemplateOptions): string {
     }
 
     .markdown-body table thead {
-      background: ${isDark ? "rgba(99,110,123,0.1)" : "rgba(175,184,193,0.12)"};
+      background: var(--table-head-bg);
     }
 
     .markdown-body table th {
-      background: ${isDark ? "#161b22" : "#f6f8fa"};
+      background: var(--table-header-bg);
       font-weight: 600;
       text-align: left;
       padding: 10px 14px;
@@ -653,7 +727,7 @@ export function buildHtml(opts: TemplateOptions): string {
 
     .markdown-body table td {
       padding: 9px 14px;
-      border-bottom: 1px solid ${isDark ? "rgba(99,110,123,0.2)" : "rgba(175,184,193,0.2)"};
+      border-bottom: 1px solid var(--table-row-border);
       color: var(--text-secondary);
     }
 
@@ -666,14 +740,14 @@ export function buildHtml(opts: TemplateOptions): string {
     }
 
     .markdown-body table tbody tr:hover {
-      background: ${isDark ? "rgba(99,110,123,0.08)" : "rgba(175,184,193,0.08)"};
+      background: var(--table-row-hover);
     }
 
     .markdown-body table code {
       font-size: 12px;
       padding: 2px 6px;
       border-radius: 4px;
-      background: ${isDark ? "rgba(110,118,129,0.2)" : "rgba(175,184,193,0.2)"};
+      background: var(--inline-code-bg);
     }
 
     /* Responsive table wrapper */
@@ -705,7 +779,7 @@ export function buildHtml(opts: TemplateOptions): string {
 
     /* Inline code */
     .markdown-body code:not(pre code) {
-      background: ${isDark ? "rgba(110,118,129,0.25)" : "rgba(175,184,193,0.2)"};
+      background: var(--inline-code-bg);
       border-radius: 4px;
       padding: 2px 6px;
       font-size: 0.9em;
@@ -720,11 +794,12 @@ export function buildHtml(opts: TemplateOptions): string {
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-thumb { background: ${colors.scrollThumb}; border-radius: 4px; }
-    ::-webkit-scrollbar-track { background: ${colors.scrollTrack}; }
+    ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: var(--scroll-track); }
 
     /* Expand all / collapse all button */
-    .toggle-all-btn {
+    .toggle-all-btn,
+    .theme-toggle-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -739,7 +814,8 @@ export function buildHtml(opts: TemplateOptions): string {
       transition: color 0.15s, border-color 0.15s, background 0.15s;
     }
 
-    .toggle-all-btn:hover {
+    .toggle-all-btn:hover,
+    .theme-toggle-btn:hover {
       color: var(--accent);
       border-color: var(--accent);
       background: var(--accent-subtle);
@@ -805,6 +881,7 @@ export function buildHtml(opts: TemplateOptions): string {
       details { open: true; }
       .code-copy-btn { display: none; }
       .toggle-all-btn { display: none; }
+      .theme-toggle-btn { display: none; }
       .toc-show-btn { display: none; }
     }
   </style>
@@ -816,6 +893,10 @@ export function buildHtml(opts: TemplateOptions): string {
     </div>
     <span class="page-header-title">${escapeHtml(opts.title)}</span>
     <span class="page-header-meta">
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn" title="Toggle color theme">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <span>Dark mode</span>
+      </button>
       <button class="toggle-all-btn" onclick="toggleAllSections()" id="toggleAllBtn">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         <span>Expand all</span>
@@ -849,7 +930,27 @@ export function buildHtml(opts: TemplateOptions): string {
   <script>
     mermaid.initialize({ startOnLoad: false, theme: "${isDark ? "dark" : "default"}" });
 
+    function setTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem("mdcool-theme", theme); } catch {}
+      const btn = document.getElementById("themeToggleBtn");
+      if (btn) btn.querySelector("span").textContent = theme === "dark" ? "Light mode" : "Dark mode";
+    }
+
+    function toggleTheme() {
+      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+    }
+
+    try {
+      const savedTheme = localStorage.getItem("mdcool-theme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        document.documentElement.dataset.theme = savedTheme;
+      }
+    } catch {}
+
     document.addEventListener("DOMContentLoaded", async () => {
+      setTheme(document.documentElement.dataset.theme || "${opts.theme}");
+
       // Mermaid diagrams — must expand sections first so diagrams have dimensions
       const mermaidBlocks = document.querySelectorAll("pre code.language-mermaid");
       if (mermaidBlocks.length > 0) {

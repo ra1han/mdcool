@@ -15,18 +15,7 @@ describe("buildHtml", () => {
     expect(html).toContain("<h1>Hello</h1>");
   });
 
-  it("uses dark theme styling for dark theme", () => {
-    const html = buildHtml({
-      title: "Test",
-      contentHtml: "<p>hi</p>",
-      theme: "dark",
-    });
-
-    expect(html).toContain('data-theme="dark"');
-    expect(html).toContain("#0d1117");
-  });
-
-  it("uses light theme styling for light theme", () => {
+  it("includes an in-page theme toggle", () => {
     const html = buildHtml({
       title: "Test",
       contentHtml: "<p>hi</p>",
@@ -34,7 +23,21 @@ describe("buildHtml", () => {
     });
 
     expect(html).toContain('data-theme="light"');
+    expect(html).toContain('id="themeToggleBtn"');
+    expect(html).toContain("toggleTheme()");
+  });
+
+  it("includes light and dark theme variables", () => {
+    const html = buildHtml({
+      title: "Test",
+      contentHtml: "<p>hi</p>",
+      theme: "light",
+    });
+
+    expect(html).toContain('[data-theme="light"]');
+    expect(html).toContain('[data-theme="dark"]');
     expect(html).toContain("#ffffff");
+    expect(html).toContain("#0d1117");
   });
 
   it("includes mermaid script", () => {

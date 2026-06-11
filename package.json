@@ -1,6 +1,6 @@
 {
   "name": "mdcool",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Render Markdown files to beautiful HTML from the CLI",
   "type": "module",
   "bin": {

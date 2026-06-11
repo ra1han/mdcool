@@ -7,11 +7,10 @@ import { buildHtml } from "./template.js";
 program
     .name("mdcool")
     .description("Render Markdown files to beautiful HTML")
-    .version("0.1.0")
+    .version("0.2.1")
     .argument("<file>", "Markdown file to render")
     .option("--open", "Open in default browser after generating")
     .option("--serve", "Watch mode with live reload")
-    .option("--theme <theme>", "Color theme (light or dark)", "dark")
     .option("--out <path>", "Custom output file path")
     .option("--port <number>", "Port for serve mode", "4567")
     .option("--stdout", "Output HTML to stdout")
@@ -25,7 +24,7 @@ program
         process.exit(1);
     }
     const mdText = await fs.readFile(filePath, "utf8");
-    const theme = opts.theme === "light" ? "light" : "dark";
+    const theme = "light";
     if (opts.serve) {
         const { startServer } = await import("./serve.js");
         await startServer(filePath, { theme, port: parseInt(opts.port, 10) });
