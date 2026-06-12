@@ -31,7 +31,8 @@ export async function renderMarkdown(
           .replace(/>/g, "&gt;");
         return `<pre><code class="language-mermaid">${escaped}</code></pre>`;
       }
-      return highlight(code, lang);
+      const resolvedLang = lang || detectLanguage(code);
+      return highlight(code, resolvedLang);
     },
   });
 
@@ -199,4 +200,46 @@ function wrapSectionsCollapsible(html: string): string {
   }
 
   return parts.join("");
+}
+
+const LANG_PATTERNS: [RegExp, string][] = [
+  // JavaScript / TypeScript
+  [/\b(import|export)\s+.*\s+from\s+['"]|require\s*\(['"]|const\s+\w+\s*=\s*require/, "javascript"],
+  [/\b(interface|type)\s+\w+\s*[{=<]|:\s*(string|number|boolean|void)\b/, "typescript"],
+  [/\b(function|const|let|var)\s+\w+|=>\s*[{(]|console\.(log|error|warn)/, "javascript"],
+  // Python
+  [/\bdef\s+\w+\s*\(|import\s+\w+|from\s+\w+\s+import|class\s+\w+.*:$|print\s*\(/m, "python"],
+  // Go
+  [/\bfunc\s+(\w+|\(\w+\s+\*?\w+\))|package\s+\w+|fmt\.(Print|Sprintf)/, "go"],
+  // Rust
+  [/\bfn\s+\w+|let\s+mut\s+|impl\s+\w+|use\s+\w+::|pub\s+(fn|struct|enum)/, "rust"],
+  // Java
+  [/\bpublic\s+(class|static|void)|System\.out\.print|import\s+java\./, "java"],
+  // Shell / Bash
+  [/^#!\s*\/bin\/(ba)?sh|^\$\s+\w+|\becho\s+|&&\s*\\$|apt-get\s|npm\s+(install|run)|pip\s+install/m, "bash"],
+  // HTML
+  [/<(!DOCTYPE|html|head|body|div|span|p|a|script|link)\b/i, "html"],
+  // CSS
+  [/[.#]\w+\s*\{[^}]*\}|@media\s|@import\s|display\s*:|font-size\s*:/s, "css"],
+  // JSON
+  [/^\s*[{\[]\s*"/, "json"],
+  // YAML
+  [/^\w[\w.]*\s*:\s+\S|^---\s*$/m, "yaml"],
+  // SQL
+  [/\b(SELECT|INSERT|UPDATE|DELETE|CREATE TABLE|ALTER TABLE)\b/i, "sql"],
+  // Dockerfile
+  [/^FROM\s+\S+|^RUN\s+|^COPY\s+|^ENTRYPOINT\s+/m, "dockerfile"],
+  // Markdown
+  [/^#{1,6}\s+.+$|^\*\*\w+\*\*|^\[.+\]\(.+\)/m, "markdown"],
+  // Diff
+  [/^[-+]{3}\s+[ab]\/|^@@\s+-\d+/m, "diff"],
+];
+
+function detectLanguage(code: string): string {
+  for (const [pattern, lang] of LANG_PATTERNS) {
+    if (pattern.test(code)) {
+      return lang;
+    }
+  }
+  return "";
 }
