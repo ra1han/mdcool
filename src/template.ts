@@ -39,6 +39,10 @@ type ThemeColors = {
   tableRowBorder: string;
   tableRowHover: string;
   inlineCodeBg: string;
+  plainCodeText: string;
+  plainCodeBg: string;
+  lineNumberColor: string;
+  treeIconColor: string;
 };
 
 const THEME_COLORS: Record<"light" | "dark", ThemeColors> = {
@@ -75,6 +79,10 @@ const THEME_COLORS: Record<"light" | "dark", ThemeColors> = {
     tableRowBorder: "rgba(175,184,193,0.2)",
     tableRowHover: "rgba(175,184,193,0.08)",
     inlineCodeBg: "rgba(175,184,193,0.2)",
+    plainCodeText: "#57606a",
+    plainCodeBg: "#f6f8fa",
+    lineNumberColor: "#afb8c1",
+    treeIconColor: "#0969da",
   },
   dark: {
     bg: "#0d1117",
@@ -109,6 +117,10 @@ const THEME_COLORS: Record<"light" | "dark", ThemeColors> = {
     tableRowBorder: "rgba(99,110,123,0.2)",
     tableRowHover: "rgba(99,110,123,0.08)",
     inlineCodeBg: "rgba(110,118,129,0.25)",
+    plainCodeText: "#8b949e",
+    plainCodeBg: "#161b22",
+    lineNumberColor: "#484f58",
+    treeIconColor: "#58a6ff",
   },
 };
 
@@ -147,6 +159,10 @@ function themeVariables(theme: "light" | "dark", colors: ThemeColors): string {
       --inline-code-bg: ${colors.inlineCodeBg};
       --scroll-thumb: ${colors.scrollThumb};
       --scroll-track: ${colors.scrollTrack};
+      --plain-code-text: ${colors.plainCodeText};
+      --plain-code-bg: ${colors.plainCodeBg};
+      --line-number-color: ${colors.lineNumberColor};
+      --tree-icon-color: ${colors.treeIconColor};
     }`;
 }
 
@@ -528,6 +544,79 @@ export function buildHtml(opts: TemplateOptions): string {
       background: var(--success-subtle);
       color: var(--success);
       border-color: var(--success);
+    }
+
+    /* Line numbers */
+    .code-block-wrapper pre code {
+      counter-reset: line;
+    }
+
+    .code-block-wrapper pre code .line {
+      counter-increment: line;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .code-block-wrapper.has-line-numbers pre code .line::before {
+      content: counter(line);
+      display: inline-block;
+      width: 2.5em;
+      margin-right: 1em;
+      padding-right: 0.5em;
+      text-align: right;
+      color: var(--line-number-color);
+      border-right: 1px solid var(--border-subtle);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .code-block-wrapper.has-line-numbers pre code .line:last-child:empty::before {
+      display: none;
+    }
+
+    /* Plain text code blocks (no language detected) */
+    .code-block-wrapper.plain-text pre {
+      background: var(--plain-code-bg) !important;
+      color: var(--plain-code-text) !important;
+      font-style: italic;
+    }
+
+    .code-block-wrapper.plain-text pre code span {
+      color: var(--plain-code-text) !important;
+    }
+
+    /* File tree blocks */
+    .code-block-wrapper.file-tree pre {
+      background: var(--surface) !important;
+      color: var(--text) !important;
+      font-style: normal;
+      font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Consolas, monospace;
+      line-height: 1.8;
+      letter-spacing: 0.02em;
+    }
+
+    .code-block-wrapper.file-tree pre code span {
+      color: var(--text) !important;
+    }
+
+    .code-block-wrapper.file-tree .tree-icon {
+      color: var(--tree-icon-color);
+      margin-right: 4px;
+      font-style: normal;
+    }
+
+    .code-block-wrapper.file-tree .tree-connector {
+      color: var(--line-number-color);
+      font-style: normal;
+    }
+
+    .code-block-wrapper.file-tree .tree-dir {
+      font-weight: 600;
+      font-style: normal;
+    }
+
+    .code-block-wrapper.file-tree .tree-file {
+      font-style: normal;
     }
 
     /* Task lists */
@@ -1058,11 +1147,52 @@ export function buildHtml(opts: TemplateOptions): string {
 
         // Language label
         const langClass = code.className.match(/language-(\\w+)/);
-        if (langClass && langClass[1]) {
+        const lang = langClass && langClass[1] ? langClass[1] : "";
+
+        if (lang) {
           const label = document.createElement("span");
           label.className = "code-lang-label";
-          label.textContent = langClass[1];
+          label.textContent = lang;
           wrapper.appendChild(label);
+        }
+
+        // Detect file tree content
+        const text = code.textContent || "";
+        const isFileTree = /[├└│┌┐┘┤┬┴┼─┃┣┗┏┓┛┠┰┸╋━]/.test(text) ||
+          (/[\\\\/]/.test(text) && text.split("\\n").length > 2 && text.split("\\n").every(l => !l.includes("=") && !l.includes("(") && l.length < 80));
+
+        if (isFileTree) {
+          wrapper.classList.add("file-tree");
+          // Enhance tree rendering with icons
+          const lines = code.querySelectorAll(".line");
+          if (lines.length > 0) {
+            lines.forEach((line) => {
+              const lineText = line.textContent || "";
+              const span = line.querySelector("span") || line;
+              const html = span.innerHTML;
+              // Add icons: 📁 for dirs, 📄 for files
+              const enhanced = html
+                .replace(/([├└│┃┣┗─━]+\\s*)/g, '<span class="tree-connector">$1</span>')
+                .replace(/([\\w.-]+\\/)/g, '<span class="tree-dir"><span class="tree-icon">📁</span>$1</span>')
+                .replace(/([\\w.-]+\\.[a-z]{1,5})(?=[^/]|$)/gi, '<span class="tree-file"><span class="tree-icon">📄</span>$1</span>');
+              span.innerHTML = enhanced;
+            });
+          }
+          // Show "file tree" label
+          if (!lang) {
+            const label = document.createElement("span");
+            label.className = "code-lang-label";
+            label.textContent = "file tree";
+            wrapper.appendChild(label);
+          }
+        } else if (!lang) {
+          wrapper.classList.add("plain-text");
+        }
+
+        // Line numbers for blocks with 3+ lines
+        const lineCount = code.querySelectorAll(".line").length || text.split("\\n").length;
+        if (lineCount >= 3 && !isFileTree) {
+          wrapper.classList.add("has-line-numbers");
         }
 
         // Copy button
